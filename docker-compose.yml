@@ -1,8 +1,7 @@
-# LuxShield full stack: GritShield backend + Velo WASM frontend.
+# LuxShield full stack: GritShield backend (crates.io) + Velo WASM frontend.
 #
-# Build contexts point at the workspace root because both crates have
-# path dependencies outside LuxShield/ (Velo framework, GritShield
-# framework); the root .dockerignore allowlists exactly those trees.
+# Build context is the workspace root because the frontend depends on the Velo
+# framework by path (../Velo); the root .dockerignore allowlists those trees.
 #
 #   docker compose up --build
 #   frontend -> http://localhost:8080 (static, nginx)

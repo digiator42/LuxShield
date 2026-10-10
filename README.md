@@ -23,7 +23,7 @@ Layer diagram:
 | └─ SSE + HTTP API                                                  |
 +----|---------------------------------------------------------------+
      v (SSE)
-   Velo WASM frontend (future)
+   Velo WASM console (frontend, nginx :8080)
 ```
 
 ## Workspace layout
@@ -31,6 +31,7 @@ Layer diagram:
 | Path          | What                                                                                                        |
 | ------------- | ----------------------------------------------------------------------------------------------------------- |
 | `backend/`    | GritShield manager — HTTP API, SSE stream, WAF middleware, firewall + kernel bridge, MCP tools. Works **cross-platform** with a simulator source. |
+| `frontend/`   | Velo WASM console — live packet terminal, firewall panel, metrics, traffic map. Built by Trunk, served by nginx. |
 | `lux-common/` | `no_std` `#[repr(C)]` ABI (`PacketEvent`, `BlockRule`, `ABI_VERSION`) shared by probe and manager.           |
 | `xdp-probe/`  | aya-bpf XDP program (Linux only). Included as a **standalone** crate so non-Linux hosts never resolve aya.   |
 
@@ -50,6 +51,37 @@ cargo build -p luxshield-backend --features ebpf   # Linux only, adds aya bridge
 > on Unix, so `--features ebpf` is intentionally Linux-only — **Windows/macOS**
 > default builds never touch it (verified: `cargo check` of the default feature
 > set is clean everywhere).
+
+## Quick start (Docker Compose — recommended)
+
+Bring up the full stack — backend + WASM console — with one command:
+
+```bash
+# Build context: the workspace, i.e. `LuxShield/` sits next to the `Velo/`
+# framework the frontend depends on by path. From the project root:
+docker compose up --build
+
+# frontend -> http://127.0.0.1:8080  (Velo WASM console)
+# backend  -> http://127.0.0.1:8020  (API + SSE; the page calls it directly,
+#             CORS is open, no proxy needed)
+```
+
+What it builds:
+
+| Image                  | Stage                                                     |
+| ---------------------- | --------------------------------------------------------- |
+| `luxshield-backend`    | GritShield manager from crates.io `0.3.1` + `lux-common`. Default features `mcp,sim` — no kernel, no aya. |
+| `luxshield-frontend`   | Velo WASM via Trunk + wasm32-unknown-unknown → static `dist/` served by nginx. |
+
+Knobs (see [Configuration](#configuration)): `LUX_SIM_PPS`,
+`LUX_API_KEY`, `LUX_SPIKE_BPS`. The compose file sets sane default.
+
+To run an interactive container instead:
+
+```bash
+docker build -f backend/Dockerfile -t luxshield-backend .
+docker run --rm -p 8020:8020 -e LUX_SIM_PPS=60 luxshield-backend
+```
 
 ## Quick start (simulator — no kernel required)
 
