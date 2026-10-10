@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = ["backend", "lux-common"]
+# The aya-bpf probe is Linux-only (needs bpf-linker + the bpf target); it is a
+# standalone crate at ./xdp-probe so Windows/macOS builds never resolve aya-bpf.
+exclude = ["xdp-probe"]
+default-members = ["backend"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/digiator42/LuxShield"
+
+# Release profile for the manager + shared ABI (xdp-probe is standalone and
+# declares its own, eBPF-appropriate profile).
+[profile.release]
+lto = true

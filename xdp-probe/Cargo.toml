@@ -1,0 +1,21 @@
+[package]
+name = "xdp-probe"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "LuxShield XDP/eBPF probe: drops blocklisted traffic at the NIC and streams packet metrics to user space."
+
+# Standalone crate: excluded from the root workspace on purpose so non-Linux
+# hosts never resolve aya-ebpf. Build with the bpf target + bpf-linker on Linux.
+[workspace]
+
+[dependencies]
+# `aya-bpf` was renamed to `aya-ebpf`; 0.1 is the same API line.
+aya-ebpf = "0.1"
+lux-common = { path = "../lux-common" }
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+codegen-units = 1

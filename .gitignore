@@ -1,0 +1,9 @@
+# Rust build outputs
+/target
+**/target/
+
+# Local databases / state
+*.db
+
+# WASM build output (frontend rebuilt by Trunk in CI/containers)
+frontend/dist/

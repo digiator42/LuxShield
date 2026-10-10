@@ -1,0 +1,12 @@
+[package]
+name = "lux-common"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/digiator42/LuxShield"
+description = "Shared C-layout ABI between the LuxShield XDP probe and its GritShield user-space manager."
+
+# Fields are hardcoded (not `*.workspace`) so the crate builds standalone in the
+# Docker probe stage, which has no access to the workspace root Cargo.toml.
+
+[dependencies]

@@ -1,0 +1,37 @@
+# LuxShield full stack: GritShield backend + Velo WASM frontend.
+#
+# Build contexts point at the workspace root because both crates have
+# path dependencies outside LuxShield/ (Velo framework, GritShield
+# framework); the root .dockerignore allowlists exactly those trees.
+#
+#   docker compose up --build
+#   frontend -> http://localhost:8080 (static, nginx)
+#   backend  -> http://localhost:8020 (API + SSE; the page calls it directly,
+#               CORS is open, so no proxy is needed)
+#
+# Knobs: LUX_SIM_PPS (simulated packets/sec), LUX_API_KEY (auth),
+# LUX_SPIKE_BPS (spike threshold), LUX_WAF_BURST / LUX_WAF_BAN_SECS.
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: LuxShield/backend/Dockerfile
+    ports:
+      - "8020:8020"
+    environment:
+      LUX_BIND: 0.0.0.0
+      LUX_PORT: 8020
+      LUX_SIM_PPS: ${LUX_SIM_PPS:-60}
+      LUX_API_KEY: ${LUX_API_KEY:-}
+      LUX_SPIKE_BPS: ${LUX_SPIKE_BPS:-250000}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: LuxShield/frontend/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
