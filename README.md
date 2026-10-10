@@ -33,12 +33,16 @@ Layer diagram:
 | `backend/`    | GritShield manager — HTTP API, SSE stream, WAF middleware, firewall + kernel bridge, MCP tools. Works **cross-platform** with a simulator source. |
 | `frontend/`   | Velo WASM console — live packet terminal, firewall panel, metrics, traffic map. Built by Trunk, served by nginx. |
 | `lux-common/` | `no_std` `#[repr(C)]` ABI (`PacketEvent`, `BlockRule`, `ABI_VERSION`) shared by probe and manager.           |
-| `xdp-probe/`  | aya-bpf XDP program (Linux only). Included as a **standalone** crate so non-Linux hosts never resolve aya.   |
+| `xdp-probe/`  | aya-bpf XDP program (Linux only). Included as a **standalone** crate so non-Linux hosts never resolve aya. Compiled to `xdp-probe.o` in the Docker build.   |
 
 ```bash
 cargo build          # backend + lux-common (default-members); simulator source
 cargo build -p luxshield-backend --features ebpf   # Linux only, adds aya bridge
 ```
+
+> The Docker image always builds the probe and the `ebpf` feature (see
+> `backend/Dockerfile`), so the container itself is the same in both modes —
+> `LUX_RING=sim` (default) vs the `docker-compose.ebpf.yml` overlay.
 
 > `xdp-probe` is its own crate on purpose. On a Linux box:
 > ```bash
@@ -70,11 +74,30 @@ What it builds:
 
 | Image                  | Stage                                                     |
 | ---------------------- | --------------------------------------------------------- |
-| `luxshield-backend`    | GritShield manager from crates.io `0.3.1` + `lux-common`. Default features `mcp,sim` — no kernel, no aya. |
+| `luxshield-backend`    | GritShield manager from crates.io `0.3.1` + `lux-common`, **plus the `xdp-probe.o` eBPF ELF** built by the `probe` stage (nightly `bpfel-unknown-none`). Built with `--features ebpf`. |
 | `luxshield-frontend`   | Velo WASM via Trunk + wasm32-unknown-unknown → static `dist/` served by nginx. |
 
+Default features `mcp,sim`: it runs the simulator out of the box, **no kernel, no
+privileges**. The live-XDP path is compiled into the same image — you switch it
+on with the ebpf overlay:
+
+```bash
+# Simulator (portable, works on any Docker host):
+docker compose up --build
+
+# Live XDP (Linux with BTF + CAP_BPF; privileged + host network):
+docker compose -f docker-compose.yml -f docker-compose.ebpf.yml up --build
+LUX_XDP_IFACE=eth0 docker compose -f docker-compose.yml -f docker-compose.ebpf.yml up
+```
+
+In `ebpf` mode aya loads `/opt/luxshield/xdp-probe.o` from the image and attaches
+it to `LUX_XDP_IFACE`; packets are dropped at the NIC before `sk_buff`
+allocation. If the attach fails (e.g. missing privileges) the manager logs
+`falling back to simulator` and stays healthy.
+
 Knobs (see [Configuration](#configuration)): `LUX_SIM_PPS`,
-`LUX_API_KEY`, `LUX_SPIKE_BPS`. The compose file sets sane default.
+`LUX_API_KEY`, `LUX_SPIKE_BPS` (sim) and `LUX_XDP_IFACE` + `LUX_WAF_*` (ebpf
+overlay). The compose files set sane defaults.
 
 To run an interactive container instead:
 

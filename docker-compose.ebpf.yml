@@ -1,0 +1,26 @@
+# LuxShield live-XDP overlay: run the backend privileged + host-network so aya
+# can attach the probe to a real NIC.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.ebpf.yml up --build
+#
+# Requires: a Linux host with BTF (/sys/kernel/btf/vmlinux), root/CAP_BPF, and
+# the probe object already inside the image (built by backend/Dockerfile).
+# The frontend still talks to http://127.0.0.1:8020 directly from the browser,
+# so no proxy/port mapping is needed here.
+#
+# Knobs: LUX_XDP_IFACE (default eth0), LUX_WAF_BURST / LUX_WAF_BAN_SECS,
+# LUX_API_KEY (auth).
+services:
+  backend:
+    network_mode: host
+    privileged: true
+    ports: !reset []
+    environment:
+      LUX_RING: ebpf
+      LUX_XDP_OBJ: /opt/luxshield/xdp-probe.o
+      LUX_XDP_IFACE: ${LUX_XDP_IFACE:-eth0}
+      LUX_WAF_BURST: ${LUX_WAF_BURST:-60}
+      LUX_WAF_BAN_SECS: ${LUX_WAF_BAN_SECS:-60}
+      LUX_API_KEY: ${LUX_API_KEY:-}
+    volumes:
+      - /sys/kernel/btf/vmlinux:/sys/kernel/btf/vmlinux:ro
