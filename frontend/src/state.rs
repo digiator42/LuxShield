@@ -245,6 +245,9 @@ pub struct AppState {
     /// Firewall rules (REST-polled).
     pub rules: SignalVec<Rule>,
     pub fw_error: RwSignal<String>,
+    /// True when the backend answers 401/403: bad key or this viewer is
+    /// WAF/firewall-banned (which blocks *every* endpoint, stream included).
+    pub banned: RwSignal<bool>,
 
     /// Ephemeral flash alerts (auto-dismissed after [`TOAST_TTL_MS`]).
     pub toasts: SignalVec<PacketRow>,
@@ -282,6 +285,7 @@ impl AppState {
             map_nodes: signal_vec(Vec::new()),
             rules: signal_vec(Vec::new()),
             fw_error: signal!(String::new()),
+            banned: signal!(false),
             toasts: signal_vec(Vec::new()),
             metrics,
             kernel: KernelInfo {

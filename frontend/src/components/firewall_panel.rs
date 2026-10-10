@@ -14,10 +14,14 @@ fn start_rules_poll(app: AppState) {
             match api::get_rules().await {
                 Ok(rules) => {
                     app.fw_error.set(String::new());
+                    app.banned.set(false);
                     app.rules.with_mut(|v| *v = rules);
                 }
                 Err(e) => {
                     // Surface connectivity problems without wiping last-good data.
+                    if e.is_forbidden() {
+                        app.banned.set(true);
+                    }
                     app.fw_error.set(format!("rules sync: {e}"));
                 }
             }
@@ -97,13 +101,13 @@ pub fn FirewallPanel() -> DomNode {
                                     reason_input.set(String::new());
                                     match api::get_rules().await {
                                         Ok(rules) => {
-                                            app.fw_error.set(String::new());
+                                            app.fw_error.set(String::new()); app.banned.set(false);
                                             app.rules.with_mut(|v| *v = rules);
                                         }
-                                        Err(e) => app.fw_error.set(e),
+                                        Err(e) => { if e.is_forbidden() { app.banned.set(true); } app.fw_error.set(e.to_string()) },
                                     }
                                 }
-                                Err(e) => app.fw_error.set(e),
+                                Err(e) => { if e.is_forbidden() { app.banned.set(true); } app.fw_error.set(e.to_string()) },
                             }
                         });
                     }}>
@@ -152,12 +156,12 @@ pub fn RuleCard(rule: Rule) -> DomNode {
                             match api::delete_rule(&ip).await {
                                 Ok(_) => match api::get_rules().await {
                                     Ok(rules) => {
-                                        app.fw_error.set(String::new());
+                                        app.fw_error.set(String::new()); app.banned.set(false);
                                         app.rules.with_mut(|v| *v = rules);
                                     }
-                                    Err(e) => app.fw_error.set(e),
+                                    Err(e) => { if e.is_forbidden() { app.banned.set(true); } app.fw_error.set(e.to_string()) },
                                 },
-                                Err(e) => app.fw_error.set(e),
+                                Err(e) => { if e.is_forbidden() { app.banned.set(true); } app.fw_error.set(e.to_string()) },
                             }
                         });
                     }}>
@@ -169,3 +173,5 @@ pub fn RuleCard(rule: Rule) -> DomNode {
         </div>
     }
 }
+
+

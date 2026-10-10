@@ -48,9 +48,22 @@ pub fn connect(app: &AppState) {
     on_open.forget();
 
     // --- onerror: EventSource retries on its own; surface the state --------
+    // A 403/401 here is invisible on the EventSource itself (no status), so
+    // probe /health once: forbidden means bad key or a WAF/firewall ban on
+    // this viewer, which blocks every endpoint including the stream.
     let on_error = {
         let conn = app.conn;
-        Closure::wrap(Box::new(move || conn.set(ConnStatus::Reconnecting)) as Box<dyn FnMut()>)
+        let app = app.clone();
+        Closure::wrap(Box::new(move || {
+            conn.set(ConnStatus::Reconnecting);
+            wasm_bindgen_futures::spawn_local(async move {
+                match api::get_health().await {
+                    Ok(_) => app.banned.set(false),
+                    Err(e) if e.is_forbidden() => app.banned.set(true),
+                    Err(_) => {}
+                }
+            });
+        }) as Box<dyn FnMut()>)
     };
     source.set_onerror(Some(on_error.as_ref().unchecked_ref()));
     on_error.forget();

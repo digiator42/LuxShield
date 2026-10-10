@@ -51,6 +51,7 @@ pub fn run_app() {
     let shell = view! {
         <div class="app-shell">
             <TopBar />
+            <BanBanner />
             <MetricsBar />
             <ControlPanel />
 
@@ -77,6 +78,7 @@ fn poll_health(app: &AppState) {
     wasm_bindgen_futures::spawn_local(async move {
         match api::get_health().await {
             Ok((ring, bridge, attached)) => {
+                app.banned.set(false);
                 app.kernel.bridge.set(if bridge.is_empty() {
                     ring.clone()
                 } else {
@@ -85,6 +87,9 @@ fn poll_health(app: &AppState) {
                 app.kernel.attached.set(attached);
             }
             Err(e) => {
+                if e.is_forbidden() {
+                    app.banned.set(true);
+                }
                 web_sys::console::warn_1(&format!("health poll: {e}").into());
             }
         }

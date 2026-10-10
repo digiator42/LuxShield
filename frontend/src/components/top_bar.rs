@@ -36,3 +36,22 @@ pub fn TopBar() -> DomNode {
         </header>
     }
 }
+
+/// Ban banner: shown when the backend answers 401/403 — bad API key or this
+/// viewer is WAF/firewall-banned (which blocks every endpoint, stream
+/// included). Unban via `DELETE /api/v1/firewall/rules?ip=…` (or MCP).
+#[component]
+pub fn BanBanner() -> DomNode {
+    let app = use_context::<AppState>().expect("AppState must be provided before mounting");
+    let banned = app.banned;
+
+    view! {
+        <div
+            class="ban-banner"
+            style:display={ move || if banned.get() { "block".to_string() } else { "none".to_string() } }
+        >
+            "⛔ 403 — bad API key or this viewer is banned. The stream and all endpoints stay blocked until unbanned: "
+            <code>"DELETE /api/v1/firewall/rules?ip=…"</code>
+        </div>
+    }
+}
