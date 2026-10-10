@@ -155,9 +155,31 @@ Same shape as `/api/v1/network/stats`, returned inside the MCP result envelope
 
 ## Notes for the frontend
 
-- `EventSource` cannot set headers → use `?api_key=` when `LUX_API_KEY` is set.
-- `history` replay is **newest-first**; render the tail or reverse before charts.
+- **Base URL.** The console calls the backend directly at
+  `BASE_URL = "http://127.0.0.1:8020"` (`frontend/src/api.rs`), which works with
+  the default compose (backend published on `8020:8020`). nginx only serves the
+  static console — it does **not** proxy the API, so relative/same-origin paths
+  will 404 unless a proxy is added. There is no nginx `/api` proxy today.
+- **Live-XDP overlay caveat (Linux only).** `docker-compose.ebpf.yml` runs the
+  backend with `network_mode: host`, which drops the published port; under
+  Docker Desktop/WSL2 the browser then cannot reach `127.0.0.1:8020` and the
+  console shows `rules sync: Failed to fetch`. Use the overlay only on a real
+  Linux host (browser and backend share the host netns), or point `BASE_URL` at
+  the host the backend is reachable on.
+- Derive URLs with `with_base(path)` (empty base → path unchanged, so a future
+  same-origin deploy only needs `BASE_URL = ""` + an nginx proxy). API key
+  travels as `?api_key=` because `EventSource` cannot carry the `X-API-Key` header.
+- `history` replay is **newest-first**; the terminal shows the stream tail
+  directly, but reverse before charting/ordering.
 - Compare `ts_ms` numerically (float). SSE keep-alive comment frames (15 s) are
   noise and can be ignored.
+- `EventSource` (browser) reconnects on its own; track `open`/`error` only.
 - WAF bans apply per source IP; a banned viewer gets `403` on *every* endpoint,
   including the stream. Unban via `DELETE /api/v1/firewall/rules?ip=...` (or MCP).
+- Response shapes consumed by the console: `GET /health` →
+  `ring_source`, `kernel.{bridge,attached}`; `GET /stats` →
+  `{pass_total, drop_total, spike_total, block_total, bytes_total}`;
+  `GET /firewall/rules` → `{ rules: [ {ip, prefix_len, reason, added_by,
+  added_at_ms, expires_at_ms, kernel_synced} ] }` (tolerate missing fields).
+- Rules are polled (no push channel) — re-fetch on a timer and after
+  add/delete; the SSE `block` event is the only live rule signal.
