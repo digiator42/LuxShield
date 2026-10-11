@@ -1,7 +1,7 @@
 //! Real-time metrics strip: packet rate, drops, bandwidth, and a rolling
 //! packets/sec sparkline chart.
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 use crate::state::AppState;
 
@@ -89,3 +89,4 @@ pub fn MetricsBar() -> DomNode {
         </section>
     }
 }
+

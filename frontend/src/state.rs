@@ -14,7 +14,7 @@ use std::cell::Cell;
 use std::rc::Rc;
 
 use serde::{Deserialize, Serialize};
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 // ---------------------------------------------------------------------------
 // Buffer sizing
@@ -371,4 +371,5 @@ pub fn format_time(ts_ms: f64) -> String {
         d.get_milliseconds()
     )
 }
+
 

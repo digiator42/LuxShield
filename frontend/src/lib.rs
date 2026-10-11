@@ -1,6 +1,6 @@
 //! LuxShield console — XDP/eBPF network shield dashboard.
 //!
-//! One codebase exercising Velo features end-to-end:
+//! One codebase exercising veloasm features end-to-end:
 //!
 //! - SSE packet feed (`EventSource` bridge in [`net`]) with named events
 //!   (`packet` | `drop` | `spike` | `block`) feeding a keyed packet terminal
@@ -11,7 +11,7 @@
 //! - `<Show>`, `class:` toggles, `bind:value` / `bind:checked` — filters,
 //!   stream switch, auto-scroll
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 use wasm_bindgen::prelude::wasm_bindgen;
 
 mod api;
@@ -123,3 +123,4 @@ fn poll_health(app: &AppState) {
     });
     std::mem::forget(_interval);
 }
+

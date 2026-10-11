@@ -1,7 +1,7 @@
 //! Firewall panel: active blocklist rules (REST-polled) plus an add-rule
 //! form that pushes straight into the kernel map via the backend.
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 use crate::api;
 use crate::state::{format_time, AppState, Rule};
@@ -173,5 +173,6 @@ pub fn RuleCard(rule: Rule) -> DomNode {
         </div>
     }
 }
+
 
 

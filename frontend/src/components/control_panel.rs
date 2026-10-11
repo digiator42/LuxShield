@@ -1,6 +1,6 @@
 //! Stream controls: connect/disconnect, kind filters, and viewport controls.
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 use crate::net;
 use crate::state::{AppState, PktKind};
@@ -103,3 +103,4 @@ pub fn ControlPanel() -> DomNode {
         </section>
     }
 }
+

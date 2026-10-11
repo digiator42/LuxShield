@@ -1,6 +1,6 @@
 //! Top status bar: brand, kernel bridge state, and stream health.
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 use crate::state::AppState;
 
@@ -55,3 +55,4 @@ pub fn BanBanner() -> DomNode {
         </div>
     }
 }
+

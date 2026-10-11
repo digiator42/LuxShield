@@ -8,7 +8,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::CanvasRenderingContext2d;
 
@@ -193,3 +193,4 @@ fn short_ip(ip: &str) -> String {
         format!("{}…", &ip[..12])
     }
 }
+

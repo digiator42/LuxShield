@@ -104,7 +104,7 @@ dependencies = [
  "js-sys",
  "serde",
  "serde_json",
- "velo",
+ "veloasm",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -245,7 +245,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
 
 [[package]]
-name = "velo"
+name = "velo_macro"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "veloasm"
 version = "0.1.0"
 dependencies = [
  "inventory",
@@ -257,15 +266,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "velo_macro"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.119",
 ]
 
 [[package]]

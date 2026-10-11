@@ -1,6 +1,6 @@
 //! Flash alerts for drops, spikes and blocks (auto-dismissed).
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 
 use crate::state::{AppState, PacketRow};
 
@@ -59,3 +59,4 @@ pub fn ToastStack() -> DomNode {
         </div>
     }
 }
+

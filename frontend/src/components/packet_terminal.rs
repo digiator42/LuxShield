@@ -4,7 +4,7 @@
 //! trimmed in batches (see `VISIBLE_TRIM_AT`). Clicking a row opens
 //! [`PacketDetail`] with the full record.
 
-use velo::prelude::*;
+use veloasm::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::Event;
 
@@ -209,3 +209,4 @@ fn scroll_to_bottom() {
         el.set_scroll_top(el.scroll_height());
     }
 }
+

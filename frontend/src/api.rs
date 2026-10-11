@@ -15,7 +15,7 @@
 //! - `DELETE /api/v1/firewall/rules?ip=...`
 //! - `GET /health` — liveness + kernel bridge status
 //!
-//! Transport is Velo's `request()` builder throughout — no hand-rolled
+//! Transport is veloasm's `request()` builder throughout — no hand-rolled
 //! `RequestInit` here.
 
 use serde::Deserialize;
@@ -51,8 +51,8 @@ fn with_base(path: &str) -> String {
 pub const API_KEY: &str = "";
 
 /// Base builder for this backend: absolute URL plus the auth query param.
-fn authenticated(url: String) -> velo::RequestBuilder {
-    let req = velo::request(&url);
+fn authenticated(url: String) -> veloasm::RequestBuilder {
+    let req = veloasm::request(&url);
     if API_KEY.is_empty() {
         req
     } else {
@@ -88,22 +88,22 @@ impl std::fmt::Display for ApiError {
     }
 }
 
-impl From<velo::FetchError> for ApiError {
-    fn from(e: velo::FetchError) -> Self {
+impl From<veloasm::FetchError> for ApiError {
+    fn from(e: veloasm::FetchError) -> Self {
         match e {
-            velo::FetchError::Status { code, .. } if code == 401 || code == 403 => ApiError {
+            veloasm::FetchError::Status { code, .. } if code == 401 || code == 403 => ApiError {
                 status: code,
                 message: format!("forbidden ({code}): bad key or this viewer is banned — unban via DELETE {RULES_PATH}?ip=…"),
             },
-            velo::FetchError::Status { code, reason } => ApiError {
+            veloasm::FetchError::Status { code, reason } => ApiError {
                 status: code,
                 message: format!("request failed ({code} {reason})"),
             },
-            velo::FetchError::Network(msg) => ApiError {
+            veloasm::FetchError::Network(msg) => ApiError {
                 status: 0,
                 message: msg,
             },
-            velo::FetchError::Decode(msg) => ApiError {
+            veloasm::FetchError::Decode(msg) => ApiError {
                 status: 0,
                 message: msg,
             },
@@ -151,18 +151,18 @@ struct KernelReply {
 }
 
 pub async fn get_stats() -> Result<StatsReply, ApiError> {
-    Ok(velo::fetch_json(&authenticated(with_base(STATS_PATH)).url()).await?)
+    Ok(veloasm::fetch_json(&authenticated(with_base(STATS_PATH)).url()).await?)
 }
 
 pub async fn get_rules() -> Result<Vec<Rule>, ApiError> {
     let reply: RulesReply =
-        velo::fetch_json(&authenticated(with_base(RULES_PATH)).url()).await?;
+        veloasm::fetch_json(&authenticated(with_base(RULES_PATH)).url()).await?;
     Ok(reply.rules)
 }
 
 pub async fn get_health() -> Result<(String, String, bool), ApiError> {
     let reply: HealthReply =
-        velo::fetch_json(&authenticated(with_base(HEALTH_PATH)).url()).await?;
+        veloasm::fetch_json(&authenticated(with_base(HEALTH_PATH)).url()).await?;
     Ok((reply.ring_source, reply.kernel.bridge, reply.kernel.attached))
 }
 
@@ -190,3 +190,4 @@ pub async fn delete_rule(ip: &str) -> Result<bool, ApiError> {
         .await?;
     Ok(true)
 }
+
