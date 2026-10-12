@@ -9,8 +9,7 @@
 #   ebpf -> attach the probe to a NIC (needs privileged + host network +
 #           /sys/kernel/btf/vmlinux; see docker-compose.ebpf.yml)
 #
-# Build context is the workspace root (see docker-compose.yml); the root
-# .dockerignore allowlists the trees this image copies.
+# Build context is the LuxShield repo root (see docker-compose.yml).
 
 # -------- Stage 1: build the eBPF probe (nightly + bpf-linker) ---------
 FROM rust:1-bookworm AS probe
@@ -26,8 +25,8 @@ RUN rustup toolchain install nightly --profile minimal \
  && rustup component add rust-src --toolchain nightly
 ENV CARGO_TARGET_DIR=/cargo-target
 WORKDIR /src/xdp-probe
-COPY LuxShield/lux-common/ /src/lux-common/
-COPY LuxShield/xdp-probe/ /src/xdp-probe/
+COPY lux-common/ /src/lux-common/
+COPY xdp-probe/ /src/xdp-probe/
 RUN --mount=type=cache,target=/cargo-target \
     --mount=type=cache,target=/usr/local/cargo/registry \
     mkdir -p /out \
@@ -40,11 +39,11 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends pkg-config libssl-dev \
  && rm -rf /var/lib/apt/lists/*
 ENV CARGO_TARGET_DIR=/cargo-target
-WORKDIR /src/LuxShield
-COPY LuxShield/Cargo.toml ./Cargo.toml
-COPY LuxShield/Cargo.lock ./Cargo.lock
-COPY LuxShield/backend ./backend
-COPY LuxShield/lux-common ./lux-common
+WORKDIR /src
+COPY Cargo.toml ./Cargo.toml
+COPY Cargo.lock ./Cargo.lock
+COPY backend ./backend
+COPY lux-common ./lux-common
 RUN --mount=type=cache,target=/cargo-target \
     --mount=type=cache,target=/usr/local/cargo/registry \
     mkdir -p /out \

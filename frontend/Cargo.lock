@@ -247,6 +247,8 @@ checksum = "d245f478577f809a851594d02313b640fb437e0bb33866753cff937863096954"
 [[package]]
 name = "velo_macro"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3908a8b40eb82ea6c1571a8a7fa111e772972854b62c21344f6ca3d4db25de10"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -256,6 +258,8 @@ dependencies = [
 [[package]]
 name = "veloasm"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4094be5e65465b556362e12922a7eb1d9b574b2b9a6ff62e278908e197e0521"
 dependencies = [
  "inventory",
  "js-sys",
